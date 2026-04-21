@@ -96,6 +96,36 @@ function drawBg(t) {
     ctx.fill();
   });
 
+  const dt = 1 / 60;
+  for (let i = 0; i < shootingStars.length; i++) {
+    const m = shootingStars[i];
+    m.age += dt;
+    if (m.age < 0) continue;
+    m.x += m.vx * dt;
+    m.y += m.vy * dt;
+    const p = m.age / m.life;
+    if (p >= 1 || m.x > W + 150 || m.y < -150 || m.y > H * 0.9) {
+      shootingStars.splice(i, 1);
+      i -= 1;
+      spawnShootingStar(3.5, 11);
+      continue;
+    }
+    const alpha = Math.sin(Math.PI * p) * 0.55;
+    const tx = m.x - m.dirX * m.tail;
+    const ty = m.y - m.dirY * m.tail;
+    const g = ctx.createLinearGradient(tx, ty, m.x, m.y);
+    g.addColorStop(0, 'rgba(255,255,255,0)');
+    g.addColorStop(0.35, `rgba(206,216,255,${alpha * 0.35})`);
+    g.addColorStop(1, `rgba(255,255,255,${alpha})`);
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 1.6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(tx, ty);
+    ctx.lineTo(m.x, m.y);
+    ctx.stroke();
+  }
+
   ctx.beginPath();
   ctx.ellipse(earthCX, earthCY, earthRX, earthRY, 0, 0, Math.PI * 2);
   ctx.fillStyle = '#05040e';
@@ -135,6 +165,45 @@ const MAX_RIBBON_POINTS = 44;
 const MAX_RIBBON_LENGTH = 195;
 const RIBBON_LAG = 0.38;
 let ribbonTarget = { x: W * 0.5, y: H * 0.5 };
+const shootingStars = [];
+
+function spawnShootingStar(delayMin = 2, delayMax = 10) {
+  const entryType = Math.random();
+  let angle = Math.PI / 4 + (Math.random() - 0.5) * 0.45;
+  let startX = Math.random() * W;
+  let startY = -40 - Math.random() * (H * 0.12);
+  if (entryType < 0.34) {
+    // Top band, down-right
+    angle = Math.PI / 4 + (Math.random() - 0.5) * 0.35;
+    startX = Math.random() * W;
+    startY = -40 - Math.random() * (H * 0.12);
+  } else if (entryType < 0.67) {
+    // Left edge, drifting down-right
+    angle = Math.PI / 6 + (Math.random() - 0.5) * 0.35;
+    startX = -40 - Math.random() * (W * 0.08);
+    startY = Math.random() * (H * 0.55);
+  } else {
+    // Right edge, drifting down-left
+    angle = (5 * Math.PI) / 6 + (Math.random() - 0.5) * 0.35;
+    startX = W + 40 + Math.random() * (W * 0.08);
+    startY = Math.random() * (H * 0.55);
+  }
+  const speed = 420 + Math.random() * 300;
+  const life = 0.7 + Math.random() * 0.55;
+  shootingStars.push({
+    x: startX,
+    y: startY,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    dirX: Math.cos(angle),
+    dirY: Math.sin(angle),
+    age: -(delayMin + Math.random() * (delayMax - delayMin)),
+    life,
+    tail: 70 + Math.random() * 60
+  });
+}
+
+for (let i = 0; i < 3; i++) spawnShootingStar(i * 2.4, 10 + i * 2.5);
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 function getScreenXY(worldX, worldY) {

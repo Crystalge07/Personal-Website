@@ -18,7 +18,7 @@ window.createSceneData = function createSceneData() {
       items: [
         { star: 0, label: 'Who Am I', title: 'Who Am I', dates: 'About Me', desc: 'I turn ideas into polished interactive products with a strong visual voice.' },
         { star: 2, label: 'My Interests', title: 'My Interests', dates: 'About Me', desc: 'I blend front-end craft and engineering to build experiences that feel cinematic and precise.' },
-        { star: 3, label: 'Connect with Me', title: 'Connect with Me', dates: 'About Me', desc: 'I favor clarity, empathy, and thoughtful detail in both interface and implementation.' },
+        { star: 3, label: 'Connect with Me', title: 'Connect with Me', dates: 'About Me', desc: 'LinkedIn: <a href="https://www.linkedin.com/in/crystal-ge-796334269/" target="_blank" rel="noopener noreferrer">Crystal Ge</a><br>GitHub: <a href="https://github.com/Crystalge07" target="_blank" rel="noopener noreferrer">Crystalge07</a><br>Email: <a href="mailto:cge49@uwo.ca">cge49@uwo.ca</a>' },
         { star: 5, label: 'My Resume', title: 'My Resume', dates: 'About Me', desc: 'Explore my background, experiences, and projects in one place.' }
       ]
     },
@@ -30,10 +30,10 @@ window.createSceneData = function createSceneData() {
       ],
       edges: [[0, 5], [5, 1], [1, 2], [2, 3], [3, 4], [4, 5], [1, 4]],
       items: [
-        { star: 0, label: 'Private Equity Analyst', title: 'Private Equity Analyst at Solen Software Group', dates: '2024 - Present', desc: 'Built performant interfaces and component systems for consumer-facing web products.' },
-        { star: 1, label: 'Data Analyst', title: 'Data Analyst at Autumn', dates: '2022 - 2024', desc: 'Led interaction design and prototyping for multi-step user journeys and growth surfaces.' },
-        { star: 3, label: 'Director of Finance', title: 'Director of Finance at Western Entrepreneurship Association', dates: '2021 - 2022', desc: 'Developed motion-heavy narrative experiences that united visual direction with web tech.' },
-        { star: 4, label: 'Director of Projects', title: 'Director of Projects at Western Founder\'s Network', dates: '2020 - 2021', desc: 'Partnered with teams on rapid concept-to-launch builds across branding and digital products.' }
+        { star: 0, label: 'Private Equity Analyst', title: 'Private Equity Analyst @ Solen Software Group', dates: 'May 2026 - August 2026', desc: 'Built performant interfaces and component systems for consumer-facing web products.' },
+        { star: 1, label: 'Data Analyst', title: 'Data Analyst @ Autumn', dates: 'January 2026 - August 2024', desc: 'Led interaction design and prototyping for multi-step user journeys and growth surfaces.' },
+        { star: 3, label: 'Director of Finance', title: 'Director of Finance @ Western Entrepreneurship Association', dates: 'September 2025 - April 2026', desc: 'Developed motion-heavy narrative experiences that united visual direction with web tech.' },
+        { star: 4, label: 'Director of Projects', title: 'Director of Projects @ Western Founder\'s Network', dates: 'September 2025 - April 202', desc: 'Partnered with teams on rapid concept-to-launch builds across branding and digital products.' }
       ]
     },
     {
