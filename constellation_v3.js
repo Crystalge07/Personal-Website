@@ -307,10 +307,10 @@ function loop(ts) {
     if (welcomeFade > 0.02) {
       ctx.textAlign = 'center';
       ctx.font = '500 40px "Cormorant Garamond", serif';
-      ctx.fillStyle = `rgba(228, 233, 250, ${0.9 * welcomeFade})`;
+      ctx.fillStyle = `rgba(255, 255, 255, ${0.9 * welcomeFade})`;
       ctx.fillText('Welcome to Crystal\'s Universe', W / 2, landingTitleY);
       ctx.font = '500 24px "Cormorant Garamond", serif';
-      ctx.fillStyle = `rgba(184, 196, 234, ${0.82 * welcomeFade})`;
+      ctx.fillStyle = `rgba(255, 255, 255, ${0.82 * welcomeFade})`;
       ctx.fillText('Have fun exploring the stars!', W / 2, landingSubtitleY);
     }
   }
@@ -395,7 +395,7 @@ function loop(ts) {
     const maxY = Math.max(...con.stars.map((p) => p.y));
     const nameAlpha = (activeConstellation !== -1 && ci !== activeConstellation) ? (1 - zoomProgress) : 1;
     ctx.font = '500 18px "Cormorant Garamond", serif';
-    ctx.fillStyle = `rgba(150,170,220,${0.74 * nameAlpha})`;
+    ctx.fillStyle = `rgba(255,255,255,${0.74 * nameAlpha})`;
     ctx.textAlign = 'center';
     if (activeConstellation === ci && zoomProgress > 0) {
       const focus = con;
