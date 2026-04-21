@@ -143,6 +143,18 @@ function getScreenXY(worldX, worldY) {
 function getWorldXY(screenX, screenY) {
   return { x: (screenX - cam.tx) / cam.scale, y: (screenY - cam.ty) / cam.scale };
 }
+
+/** World position where section title sits so that at full zoom it lands on the horizon welcome line (screen Y = H - 72). */
+function getZoomedSectionTitleWorld(focus) {
+  const scaleFinal = 2.2;
+  const focusTargetY = focus.name === 'Experiences' ? H * 0.5 : H * 0.45;
+  const txFinal = W / 2 - focus.cx * scaleFinal;
+  const tyFinal = focusTargetY - focus.cy * scaleFinal;
+  const landingTitleY = H - 72;
+  const lx = (W / 2 - txFinal) / scaleFinal;
+  const ly = (landingTitleY - tyFinal) / scaleFinal;
+  return { lx, ly };
+}
 function hideCard() {
   selectedItem = null;
   detailOverlay.classList.remove('show');
@@ -277,8 +289,9 @@ function loop(ts) {
   if (activeConstellation !== -1) {
     const focus = CONSTELLATIONS[activeConstellation];
     cam.scale = lerp(1, 2.2, zoomProgress);
+    const focusTargetY = focus.name === 'Experiences' ? H * 0.5 : H * 0.45;
     cam.tx = lerp(0, W / 2 - focus.cx * cam.scale, zoomProgress);
-    cam.ty = lerp(0, H * 0.45 - focus.cy * cam.scale, zoomProgress);
+    cam.ty = lerp(0, focusTargetY - focus.cy * cam.scale, zoomProgress);
   } else {
     cam.scale = 1;
     cam.tx = 0;
@@ -286,17 +299,20 @@ function loop(ts) {
   }
 
   drawBg(t);
-  if (zoomProgress < 0.15) {
-    const a = 1 - (zoomProgress / 0.15);
+  {
     const landingTitleY = H - 72;
     const landingSubtitleY = H - 38;
-    ctx.textAlign = 'center';
-    ctx.font = '500 40px "Cormorant Garamond", serif';
-    ctx.fillStyle = `rgba(228, 233, 250, ${0.9 * a})`;
-    ctx.fillText('Welcome to Crystal\'s Universe', W / 2, landingTitleY);
-    ctx.font = '500 24px "Cormorant Garamond", serif';
-    ctx.fillStyle = `rgba(184, 196, 234, ${0.82 * a})`;
-    ctx.fillText('Explore these constellations to learn!', W / 2, landingSubtitleY);
+    const welcomeFade =
+      activeConstellation !== -1 ? 1 - zoomProgress : 1;
+    if (welcomeFade > 0.02) {
+      ctx.textAlign = 'center';
+      ctx.font = '500 40px "Cormorant Garamond", serif';
+      ctx.fillStyle = `rgba(228, 233, 250, ${0.9 * welcomeFade})`;
+      ctx.fillText('Welcome to Crystal\'s Universe', W / 2, landingTitleY);
+      ctx.font = '500 24px "Cormorant Garamond", serif';
+      ctx.fillStyle = `rgba(184, 196, 234, ${0.82 * welcomeFade})`;
+      ctx.fillText('Explore these constellations to learn!', W / 2, landingSubtitleY);
+    }
   }
 
   ctx.save();
@@ -381,7 +397,13 @@ function loop(ts) {
     ctx.font = '500 18px "Cormorant Garamond", serif';
     ctx.fillStyle = `rgba(150,170,220,${0.74 * nameAlpha})`;
     ctx.textAlign = 'center';
-    ctx.fillText(con.name.toUpperCase(), avgX, maxY + 26);
+    if (activeConstellation === ci && zoomProgress > 0) {
+      const focus = con;
+      const { lx, ly } = getZoomedSectionTitleWorld(focus);
+      ctx.fillText(con.name.toUpperCase(), lx, ly);
+    } else {
+      ctx.fillText(con.name.toUpperCase(), avgX, maxY + 26);
+    }
 
     if (activeConstellation === ci && zoomProgress > 0.68) {
       const labelAlpha = (zoomProgress - 0.68) / 0.32;
