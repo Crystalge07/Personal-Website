@@ -311,7 +311,7 @@ function loop(ts) {
       ctx.fillText('Welcome to Crystal\'s Universe', W / 2, landingTitleY);
       ctx.font = '500 24px "Cormorant Garamond", serif';
       ctx.fillStyle = `rgba(184, 196, 234, ${0.82 * welcomeFade})`;
-      ctx.fillText('Explore these constellations to learn!', W / 2, landingSubtitleY);
+      ctx.fillText('Have fun exploring the stars!', W / 2, landingSubtitleY);
     }
   }
 
