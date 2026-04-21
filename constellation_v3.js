@@ -26,7 +26,8 @@ const CONSTELLATIONS = [
     items: [
       { star: 0, label: 'Who Am I', title: 'Who Am I', dates: 'About Me', desc: 'I turn ideas into polished interactive products with a strong visual voice.' },
       { star: 2, label: 'My Interests', title: 'My Interests', dates: 'About Me', desc: 'I blend front-end craft and engineering to build experiences that feel cinematic and precise.' },
-      { star: 3, label: 'My Resume', title: 'My Resume', dates: 'About Me', desc: 'I favor clarity, empathy, and thoughtful detail in both interface and implementation.' }
+      { star: 3, label: 'Connect with Me', title: 'Connect with Me', dates: 'About Me', desc: 'I favor clarity, empathy, and thoughtful detail in both interface and implementation.' },
+      { star: 5, label: 'My Resume', title: 'My Resume', dates: 'About Me', desc: 'Explore my background, experiences, and projects in one place.' }
     ]
   },
   {
@@ -61,7 +62,7 @@ const CONSTELLATIONS = [
 CONSTELLATIONS.forEach((con, ci) => {
   const baseCx = con.stars.reduce((s, p) => s + p.x, 0) / con.stars.length;
   const baseCy = con.stars.reduce((s, p) => s + p.y, 0) / con.stars.length;
-  const sizeScale = 1.18;
+  const sizeScale = 1.5;
   con.stars = con.stars.map((s) => ({
     x: baseCx + (s.x - baseCx) * sizeScale,
     y: baseCy + (s.y - baseCy) * sizeScale
@@ -78,7 +79,27 @@ CONSTELLATIONS.forEach((con, ci) => {
     .map((s, i) => ({ i, score: (Math.sin((s.x + s.y) * 0.013 + ci) + 1) * 0.5 }))
     .sort((a, b) => b.score - a.score);
   con.anchorStars = ranked.slice(0, 2).map((v) => v.i);
+  con.designStars = con.stars.map((s) => ({ x: s.x, y: s.y }));
 });
+
+function positionConstellations() {
+  const allStars = CONSTELLATIONS.flatMap((con) => con.designStars);
+  const currentCenterX = allStars.reduce((sum, s) => sum + s.x, 0) / allStars.length;
+  const currentCenterY = allStars.reduce((sum, s) => sum + s.y, 0) / allStars.length;
+  const targetCenterX = W * 0.5;
+  const targetCenterY = H * 0.45;
+  const dx = targetCenterX - currentCenterX;
+  const dy = targetCenterY - currentCenterY;
+
+  CONSTELLATIONS.forEach((con) => {
+    const centeredStars = con.designStars.map((s) => ({ x: s.x + dx, y: s.y + dy }));
+    const centeredCx = centeredStars.reduce((sum, p) => sum + p.x, 0) / centeredStars.length;
+    const spreadOffsetX = (centeredCx - targetCenterX) * 0.12;
+    con.stars = centeredStars.map((s) => ({ x: s.x + spreadOffsetX, y: s.y }));
+    con.cx = con.stars.reduce((sum, p) => sum + p.x, 0) / con.stars.length;
+    con.cy = con.stars.reduce((sum, p) => sum + p.y, 0) / con.stars.length;
+  });
+}
 
 function setupCanvas() {
   W = Math.max(960, window.innerWidth);
@@ -95,6 +116,7 @@ function setupCanvas() {
   wg.addColorStop(0.5, 'rgba(255,253,255,0.95)');
   wg.addColorStop(0.85, 'rgba(230,220,255,0.65)');
   wg.addColorStop(1, 'rgba(255,255,255,0)');
+  positionConstellations();
 }
 setupCanvas();
 window.addEventListener('resize', setupCanvas);
@@ -150,6 +172,11 @@ let zoomProgress = 0;
 let selectedItem = null;
 let mouse = { x: 0, y: 0 };
 let cam = { scale: 1, tx: 0, ty: 0 };
+const cursorRibbon = [];
+const MAX_RIBBON_POINTS = 44;
+const MAX_RIBBON_LENGTH = 195;
+const RIBBON_LAG = 0.38;
+let ribbonTarget = { x: W * 0.5, y: H * 0.5 };
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 function getScreenXY(worldX, worldY) {
@@ -164,10 +191,13 @@ function hideCard() {
 }
 function showCard(con, item) {
   selectedItem = { con, item };
+  const normalizedDate = (item.dates || '').trim().toLowerCase();
+  const normalizedSection = con.name.trim().toLowerCase();
+  const shouldShowDate = normalizedDate && normalizedDate !== normalizedSection && normalizedDate !== 'project';
   detailPanel.innerHTML =
     `<div class="kicker">${con.name}</div>` +
     `<div class="title">${item.title}</div>` +
-    `<div class="date">${item.dates}</div>` +
+    (shouldShowDate ? `<div class="date">${item.dates}</div>` : '') +
     `<div class="desc">${item.desc}</div>`;
   detailOverlay.classList.add('show');
 }
@@ -176,6 +206,8 @@ c.addEventListener('mousemove', (e) => {
   const r = c.getBoundingClientRect();
   mouse.x = (e.clientX - r.left) * (W / r.width);
   mouse.y = (e.clientY - r.top) * (H / r.height);
+  ribbonTarget.x = mouse.x;
+  ribbonTarget.y = mouse.y;
   if (activeConstellation === -1) {
     hoveredConstellation = -1;
     for (let i = 0; i < CONSTELLATIONS.length; i++) {
@@ -190,6 +222,7 @@ c.addEventListener('mousemove', (e) => {
 
 c.addEventListener('mouseleave', () => {
   if (activeConstellation === -1) hoveredConstellation = -1;
+  ribbonTarget = { x: mouse.x, y: mouse.y };
 });
 
 c.addEventListener('click', () => {
@@ -251,6 +284,33 @@ window.addEventListener('keydown', (e) => {
 function loop(ts) {
   const t = ts * 0.001;
   c.style.cursor = (activeConstellation === -1 && hoveredConstellation !== -1) ? 'pointer' : 'default';
+  if (cursorRibbon.length === 0) {
+    for (let i = 0; i < MAX_RIBBON_POINTS; i++) {
+      cursorRibbon.push({ x: ribbonTarget.x, y: ribbonTarget.y });
+    }
+  }
+  cursorRibbon[0].x += (ribbonTarget.x - cursorRibbon[0].x) * RIBBON_LAG;
+  cursorRibbon[0].y += (ribbonTarget.y - cursorRibbon[0].y) * RIBBON_LAG;
+  for (let i = 1; i < cursorRibbon.length; i++) {
+    cursorRibbon[i].x += (cursorRibbon[i - 1].x - cursorRibbon[i].x) * RIBBON_LAG;
+    cursorRibbon[i].y += (cursorRibbon[i - 1].y - cursorRibbon[i].y) * RIBBON_LAG;
+  }
+  let length = 0;
+  let keepCount = cursorRibbon.length;
+  for (let i = 1; i < cursorRibbon.length; i++) {
+    length += Math.hypot(cursorRibbon[i].x - cursorRibbon[i - 1].x, cursorRibbon[i].y - cursorRibbon[i - 1].y);
+    if (length > MAX_RIBBON_LENGTH) {
+      keepCount = i + 1;
+      break;
+    }
+  }
+  if (keepCount < cursorRibbon.length) {
+    cursorRibbon.splice(keepCount);
+  }
+  while (cursorRibbon.length < MAX_RIBBON_POINTS) {
+    const tail = cursorRibbon[cursorRibbon.length - 1];
+    cursorRibbon.push({ x: tail.x, y: tail.y });
+  }
   zoomProgress = lerp(zoomProgress, targetZoom, 0.055);
   if (targetZoom === 0 && zoomProgress < 0.02) {
     zoomProgress = 0;
@@ -270,15 +330,15 @@ function loop(ts) {
   drawBg(t);
   if (zoomProgress < 0.15) {
     const a = 1 - (zoomProgress / 0.15);
-    const landingTitleY = H - 82;
-    const landingSubtitleY = H - 48;
+    const landingTitleY = H - 72;
+    const landingSubtitleY = H - 38;
     ctx.textAlign = 'center';
     ctx.font = '500 40px "Cormorant Garamond", serif';
     ctx.fillStyle = `rgba(228, 233, 250, ${0.9 * a})`;
     ctx.fillText('Welcome to Crystal\'s Universe', W / 2, landingTitleY);
     ctx.font = '500 24px "Cormorant Garamond", serif';
     ctx.fillStyle = `rgba(184, 196, 234, ${0.82 * a})`;
-    ctx.fillText('Explore these constellations to learn more about her', W / 2, landingSubtitleY);
+    ctx.fillText('Explore these constellations to learn!', W / 2, landingSubtitleY);
   }
 
   ctx.save();
@@ -368,6 +428,32 @@ function loop(ts) {
   });
 
   ctx.restore();
+
+  if (cursorRibbon.length > 2) {
+    const head = cursorRibbon[0];
+    const tail = cursorRibbon[cursorRibbon.length - 1];
+    const gradient = ctx.createLinearGradient(head.x, head.y, tail.x, tail.y);
+    gradient.addColorStop(0, 'rgba(170,215,255,0.72)');
+    gradient.addColorStop(1, 'rgba(100,140,255,0)');
+    const maxWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = maxWidth;
+    ctx.strokeStyle = gradient;
+    ctx.beginPath();
+    ctx.moveTo(cursorRibbon[0].x, cursorRibbon[0].y);
+    for (let i = 1; i < cursorRibbon.length - 1; i += 2) {
+      const cpX = cursorRibbon[i].x;
+      const cpY = cursorRibbon[i].y;
+      const next = Math.min(i + 2, cursorRibbon.length - 1);
+      const endX = (cursorRibbon[i].x + cursorRibbon[next].x) * 0.5;
+      const endY = (cursorRibbon[i].y + cursorRibbon[next].y) * 0.5;
+      ctx.quadraticCurveTo(cpX, cpY, endX, endY);
+    }
+    ctx.lineTo(tail.x, tail.y);
+    ctx.stroke();
+  }
+
   requestAnimationFrame(loop);
 }
 
