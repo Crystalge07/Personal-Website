@@ -2,6 +2,8 @@ const c = document.getElementById('bg');
 const ctx = c.getContext('2d');
 const detailOverlay = document.getElementById('detailOverlay');
 const detailPanel = document.getElementById('detailPanel');
+const introOverlay = document.getElementById('introOverlay');
+const introTextWrap = document.getElementById('introTextWrap');
 let W = 1400, H = 900;
 
 let earthCX = W / 2, earthCY = H + 1800, earthRX = W * 2.2, earthRY = 2000;
@@ -135,6 +137,41 @@ const MAX_RIBBON_POINTS = 44;
 const MAX_RIBBON_LENGTH = 195;
 const RIBBON_LAG = 0.38;
 let ribbonTarget = { x: W * 0.5, y: H * 0.5 };
+let introTargetProgress = 0;
+let introProgress = 0;
+let introActive = !!introOverlay;
+const INTRO_WHEEL_SCALE = 1 / 900;
+
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
+}
+
+function onIntroWheel(e) {
+  if (!introActive) return;
+  e.preventDefault();
+  introTargetProgress = clamp(introTargetProgress + e.deltaY * INTRO_WHEEL_SCALE, 0, 1);
+}
+
+function completeIntro() {
+  if (!introActive) return;
+  introActive = false;
+  introTargetProgress = 1;
+  introProgress = 1;
+  window.removeEventListener('wheel', onIntroWheel);
+  c.style.transform = 'translateY(0px) scale(1)';
+  c.style.transformOrigin = '50% 100%';
+  if (introOverlay) introOverlay.remove();
+}
+
+if (introActive) {
+  window.addEventListener('wheel', onIntroWheel, { passive: false });
+  c.style.transformOrigin = '50% 100%';
+  c.style.transform = 'translateY(200px) scale(0.9)';
+  if (introOverlay) {
+    introOverlay.style.opacity = '1';
+    introOverlay.style.clipPath = 'none';
+  }
+}
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 function getScreenXY(worldX, worldY) {
@@ -241,6 +278,23 @@ window.addEventListener('keydown', (e) => {
 
 function loop(ts) {
   const t = ts * 0.001;
+  if (introActive) {
+    introProgress = lerp(introProgress, introTargetProgress, 0.12);
+    const introScale = lerp(0.9, 1, introProgress);
+    const introShiftY = lerp(200, 0, introProgress);
+    c.style.transformOrigin = '50% 100%';
+    c.style.transform = `translateY(${introShiftY}px) scale(${introScale})`;
+    if (introTextWrap) {
+      const textFade = 1 - clamp(introProgress / 0.3, 0, 1);
+      introTextWrap.style.opacity = `${textFade}`;
+    }
+    if (introOverlay) {
+      introOverlay.style.opacity = `${1 - introProgress}`;
+    }
+    if (introTargetProgress >= 1 && introProgress >= 0.995) {
+      completeIntro();
+    }
+  }
   c.style.cursor = (activeConstellation === -1 && hoveredConstellation !== -1) ? 'pointer' : 'default';
   if (cursorRibbon.length === 0) {
     for (let i = 0; i < MAX_RIBBON_POINTS; i++) {
