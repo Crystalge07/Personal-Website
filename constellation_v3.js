@@ -9,7 +9,7 @@ let wg = null;
 
 const bgStars = Array.from({ length: 320 }, () => ({
   x: Math.random(), y: Math.random() * 0.82,
-  r: Math.random() < 0.05 ? Math.random() * 1.65 + 0.85 : Math.random() * 1.0 + 0.35,
+  r: Math.random() < 0.05 ? Math.random() * 1.9 + 1.0 : Math.random() * 1.15 + 0.42,
   a: Math.random() * 0.5 + 0.3,
   phase: Math.random() * Math.PI * 2,
   speed: 0.35 + Math.random() * 0.7
@@ -157,10 +157,10 @@ window.addEventListener('resize', setupCanvas);
 
 function drawBg(t) {
   const sb = ctx.createLinearGradient(0, 0, 0, H);
-  sb.addColorStop(0, '#04040a');
-  sb.addColorStop(0.5, '#07061a');
-  sb.addColorStop(0.85, '#0d0828');
-  sb.addColorStop(1, '#06050f');
+  sb.addColorStop(0, '#01040b');
+  sb.addColorStop(0.5, '#040914');
+  sb.addColorStop(0.85, '#08122a');
+  sb.addColorStop(1, '#020712');
   ctx.fillStyle = sb;
   ctx.fillRect(0, 0, W, H);
 
@@ -180,11 +180,11 @@ function drawBg(t) {
   for (let i = 0; i < 45; i++) {
     const tt = i / 45, ex = i * 3.8, al = (1 - tt) * (1 - tt) * 0.11;
     const fg = ctx.createLinearGradient(W * 0.05, 0, W * 0.95, 0);
-    fg.addColorStop(0, 'rgba(100,60,200,0)');
-    fg.addColorStop(0.12, `rgba(120,80,220,${al * 0.7})`);
-    fg.addColorStop(0.5, `rgba(150,100,255,${al * 1.5})`);
-    fg.addColorStop(0.88, `rgba(120,80,220,${al * 0.7})`);
-    fg.addColorStop(1, 'rgba(100,60,200,0)');
+    fg.addColorStop(0, 'rgba(52,72,164,0)');
+    fg.addColorStop(0.12, `rgba(74,96,198,${al * 0.55})`);
+    fg.addColorStop(0.5, `rgba(102,124,224,${al * 1.02})`);
+    fg.addColorStop(0.88, `rgba(74,96,198,${al * 0.55})`);
+    fg.addColorStop(1, 'rgba(52,72,164,0)');
     ctx.strokeStyle = fg;
     ctx.lineWidth = 4.5;
     ctx.beginPath();
@@ -401,11 +401,11 @@ function loop(ts) {
       lineAlpha *= hoverBoost;
 
       const lg = ctx.createLinearGradient(sa.x, sa.y, sb.x, sb.y);
-      lg.addColorStop(0, `rgba(100,140,255,${lineAlpha})`);
-      lg.addColorStop(left, `rgba(100,140,255,${lineAlpha * 0.9})`);
-      lg.addColorStop(flowCenter, `rgba(170,215,255,${lineAlpha + meta.glow})`);
-      lg.addColorStop(right, `rgba(100,140,255,${lineAlpha * 0.9})`);
-      lg.addColorStop(1, `rgba(100,140,255,${lineAlpha})`);
+      lg.addColorStop(0, `rgba(188,194,214,${lineAlpha})`);
+      lg.addColorStop(left, `rgba(188,194,214,${lineAlpha * 0.9})`);
+      lg.addColorStop(flowCenter, `rgba(230,232,242,${lineAlpha + meta.glow})`);
+      lg.addColorStop(right, `rgba(188,194,214,${lineAlpha * 0.9})`);
+      lg.addColorStop(1, `rgba(188,194,214,${lineAlpha})`);
       ctx.strokeStyle = lg;
       ctx.lineWidth = activeConstellation === ci ? 1.35 : 1.2;
       const midX = (sa.x + sb.x) * 0.5;
@@ -476,8 +476,8 @@ function loop(ts) {
     const head = cursorRibbon[0];
     const tail = cursorRibbon[cursorRibbon.length - 1];
     const gradient = ctx.createLinearGradient(head.x, head.y, tail.x, tail.y);
-    gradient.addColorStop(0, 'rgba(170,215,255,0.72)');
-    gradient.addColorStop(1, 'rgba(100,140,255,0)');
+    gradient.addColorStop(0, 'rgba(226,228,236,0.74)');
+    gradient.addColorStop(1, 'rgba(178,182,204,0)');
     const maxWidth = 2.5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
