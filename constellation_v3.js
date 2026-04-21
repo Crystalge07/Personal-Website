@@ -71,9 +71,12 @@ CONSTELLATIONS.forEach((con, ci) => {
   con.cy = con.stars.reduce((s, p) => s + p.y, 0) / con.stars.length;
   con.hitRadius = 132 * sizeScale;
   con.edgesMeta = con.edges.map((_, ei) => ({
-    phase: ci * 1.9 + ei * 0.73 + Math.random() * 2.2,
-    speed: 0.27 + Math.random() * 0.4,
-    flow: 0.045 + Math.random() * 0.03
+    alpha: 0.34 + Math.random() * 0.18,
+    glow: 0.16 + Math.random() * 0.14,
+    flowOffset: Math.random(),
+    wobblePhase: Math.random() * Math.PI * 2,
+    wobbleSpeed: 0.45 + Math.random() * 0.8,
+    wobbleAmp: 4 + Math.random() * 5
   }));
   const ranked = con.stars
     .map((s, i) => ({ i, score: (Math.sin((s.x + s.y) * 0.013 + ci) + 1) * 0.5 }))
@@ -81,6 +84,37 @@ CONSTELLATIONS.forEach((con, ci) => {
   con.anchorStars = ranked.slice(0, 2).map((v) => v.i);
   con.designStars = con.stars.map((s) => ({ x: s.x, y: s.y }));
 });
+
+function initLineTweens() {
+  if (typeof gsap === 'undefined') return;
+  CONSTELLATIONS.forEach((con) => {
+    con.edgesMeta.forEach((line) => {
+      gsap.to(line, {
+        alpha: 0.8,
+        duration: gsap.utils.random(2, 4),
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+        delay: gsap.utils.random(0, 2)
+      });
+      gsap.to(line, {
+        glow: gsap.utils.random(0.28, 0.42),
+        duration: gsap.utils.random(2.2, 4.4),
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+        delay: gsap.utils.random(0, 2)
+      });
+      gsap.to(line, {
+        flowOffset: line.flowOffset + gsap.utils.random(0.7, 1.4),
+        duration: gsap.utils.random(7, 12),
+        ease: 'none',
+        repeat: -1
+      });
+    });
+  });
+}
+initLineTweens();
 
 function positionConstellations() {
   const allStars = CONSTELLATIONS.flatMap((con) => con.designStars);
@@ -353,11 +387,10 @@ function loop(ts) {
     con.edges.forEach(([a, b], ei) => {
       const sa = con.stars[a], sb = con.stars[b];
       const meta = con.edgesMeta[ei];
-      const breathe = 0.18 + 0.24 * (0.5 + 0.5 * Math.sin(t * meta.speed + meta.phase));
-      const flowCenter = (t * meta.flow + meta.phase * 0.11) % 1;
+      const flowCenter = meta.flowOffset % 1;
       const left = Math.max(0, flowCenter - 0.33);
       const right = Math.min(1, flowCenter + 0.33);
-      let lineAlpha = breathe;
+      let lineAlpha = meta.alpha;
       if (activeConstellation !== -1 && ci !== activeConstellation) {
         lineAlpha *= (1 - zoomProgress);
       } else if (activeConstellation === -1 && hoveredConstellation !== -1 && hoveredConstellation !== ci) {
@@ -370,14 +403,24 @@ function loop(ts) {
       const lg = ctx.createLinearGradient(sa.x, sa.y, sb.x, sb.y);
       lg.addColorStop(0, `rgba(100,140,255,${lineAlpha})`);
       lg.addColorStop(left, `rgba(100,140,255,${lineAlpha * 0.9})`);
-      lg.addColorStop(flowCenter, `rgba(170,215,255,${lineAlpha + 0.18})`);
+      lg.addColorStop(flowCenter, `rgba(170,215,255,${lineAlpha + meta.glow})`);
       lg.addColorStop(right, `rgba(100,140,255,${lineAlpha * 0.9})`);
       lg.addColorStop(1, `rgba(100,140,255,${lineAlpha})`);
       ctx.strokeStyle = lg;
       ctx.lineWidth = activeConstellation === ci ? 1.35 : 1.2;
+      const midX = (sa.x + sb.x) * 0.5;
+      const midY = (sa.y + sb.y) * 0.5;
+      const dx = sb.x - sa.x;
+      const dy = sb.y - sa.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len;
+      const ny = dx / len;
+      const wobble = Math.sin(t * meta.wobbleSpeed + meta.wobblePhase) * meta.wobbleAmp;
+      const cpX = midX + nx * wobble;
+      const cpY = midY + ny * wobble;
       ctx.beginPath();
       ctx.moveTo(sa.x, sa.y);
-      ctx.lineTo(sb.x, sb.y);
+      ctx.quadraticCurveTo(cpX, cpY, sb.x, sb.y);
       ctx.stroke();
     });
 
