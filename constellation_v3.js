@@ -278,8 +278,8 @@ c.addEventListener('click', () => {
     const con = CONSTELLATIONS[activeConstellation];
     let hit = null;
     con.items.forEach((item) => {
-      const s = con.stars[item.star];
-      if (Math.hypot(world.x - s.x, world.y - s.y) < 12) hit = item;
+      const sp = getScreenXY(con.stars[item.star].x, con.stars[item.star].y);
+      if (Math.hypot(mouse.x - sp.x, mouse.y - sp.y) < 40) hit = item;
     });
     if (hit) {
       showCard(con, hit);
