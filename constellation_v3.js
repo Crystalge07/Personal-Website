@@ -30,10 +30,12 @@ function initLineTweens() {
         delay: gsap.utils.random(0, 2)
       });
       gsap.to(line, {
-        flowOffset: line.flowOffset + gsap.utils.random(0.7, 1.4),
-        duration: gsap.utils.random(7, 12),
-        ease: 'none',
-        repeat: -1
+        flowCenter: gsap.utils.random(0.18, 0.82),
+        duration: gsap.utils.random(5.5, 9),
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+        delay: gsap.utils.random(0, 2)
       });
     });
   });
@@ -402,7 +404,7 @@ function loop(ts) {
     con.edges.forEach(([a, b], ei) => {
       const sa = con.stars[a], sb = con.stars[b];
       const meta = con.edgesMeta[ei];
-      const flowCenter = meta.flowOffset % 1;
+      const flowCenter = meta.flowCenter;
       const left = Math.max(0, flowCenter - 0.33);
       const right = Math.min(1, flowCenter + 0.33);
       let lineAlpha = meta.alpha;
@@ -449,20 +451,26 @@ function loop(ts) {
         alpha = 1.3;
       }
       alpha *= hoverBoost;
-      const isAnchor = con.anchorStars.includes(si);
+      const isLabeledStar = con.labeledStars.includes(si);
       const isZoomedStar = activeConstellation === ci && zoomProgress > 0.65 && con.items.some((item) => item.star === si);
-      const rad = isZoomedStar ? 4.7 : (isAnchor ? 4.4 : 3);
-      const glowR = isAnchor ? 20 : 14;
-      const softGlow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glowR);
-      softGlow.addColorStop(0, `rgba(180,205,255,${(isAnchor ? 0.52 : 0.35) * alpha})`);
-      softGlow.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = softGlow;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, glowR, 0, Math.PI * 2);
-      ctx.fill();
+      const twinkle = isLabeledStar ? (0.9 + 0.1 * Math.sin(t * 2.2 + si * 1.7 + ci * 0.9)) : 1;
+      const rad = isZoomedStar ? 4.7 : (isLabeledStar ? 3.7 : 2.6);
+      if (isLabeledStar) {
+        const glowR = 18;
+        const softGlow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glowR);
+        softGlow.addColorStop(0, `rgba(180,205,255,${0.48 * alpha * twinkle})`);
+        softGlow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = softGlow;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, glowR, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.beginPath();
       ctx.arc(s.x, s.y, rad, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(225,235,255,${(isAnchor ? 1 : 0.95) * alpha})`;
+      const starOpacity = isLabeledStar
+        ? Math.max(0.8, alpha * twinkle)
+        : 0.8 * alpha;
+      ctx.fillStyle = `rgba(225,235,255,${starOpacity})`;
       ctx.fill();
     });
 
