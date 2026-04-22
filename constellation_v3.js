@@ -90,10 +90,13 @@ function drawBg(t) {
   ctx.fillStyle = sb;
   ctx.fillRect(0, 0, W, H);
 
+  const MAX_PARALLAX = 40;
   bgStars.forEach((s) => {
     const pulse = 0.76 + 0.24 * Math.sin(t * s.speed + s.phase);
+    const px = parallax.x * s.depth * MAX_PARALLAX;
+    const py = parallax.y * s.depth * MAX_PARALLAX;
     ctx.beginPath();
-    ctx.arc(s.x * W, s.y * H, s.r * pulse, 0, Math.PI * 2);
+    ctx.arc(s.x * W + px, s.y * H + py, s.r * pulse, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(255,255,255,${s.a * (0.9 + (pulse - 0.76) * 1.35)})`;
     ctx.fill();
   });
@@ -162,6 +165,8 @@ let zoomProgress = 0;
 let selectedItem = null;
 let mouse = { x: 0, y: 0 };
 let cam = { scale: 1, tx: 0, ty: 0 };
+let parallax = { x: 0, y: 0 };
+let parallaxTarget = { x: 0, y: 0 };
 const cursorRibbon = [];
 const MAX_RIBBON_POINTS = 44;
 const MAX_RIBBON_LENGTH = 195;
@@ -255,6 +260,8 @@ c.addEventListener('mousemove', (e) => {
   mouse.y = (e.clientY - r.top) * (H / r.height);
   ribbonTarget.x = mouse.x;
   ribbonTarget.y = mouse.y;
+  parallaxTarget.x = mouse.x / W - 0.5;
+  parallaxTarget.y = mouse.y / H - 0.5;
   if (activeConstellation === -1) {
     hoveredConstellation = -1;
     for (let i = 0; i < CONSTELLATIONS.length; i++) {
@@ -358,6 +365,8 @@ function loop(ts) {
     const tail = cursorRibbon[cursorRibbon.length - 1];
     cursorRibbon.push({ x: tail.x, y: tail.y });
   }
+  parallax.x += (parallaxTarget.x - parallax.x) * 0.04;
+  parallax.y += (parallaxTarget.y - parallax.y) * 0.04;
   zoomProgress = lerp(zoomProgress, targetZoom, 0.055);
   if (targetZoom === 0 && zoomProgress < 0.02) {
     zoomProgress = 0;

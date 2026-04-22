@@ -1,11 +1,16 @@
 window.createSceneData = function createSceneData() {
-  const bgStars = Array.from({ length: 320 }, () => ({
-    x: Math.random(), y: Math.random() * 0.82,
-    r: Math.random() < 0.05 ? Math.random() * 1.9 + 1.0 : Math.random() * 1.15 + 0.42,
-    a: Math.random() * 0.5 + 0.3,
-    phase: Math.random() * Math.PI * 2,
-    speed: 0.35 + Math.random() * 0.7
-  }));
+  const bgStars = Array.from({ length: 320 }, () => {
+    const r = Math.random() < 0.05 ? Math.random() * 1.9 + 1.0 : Math.random() * 1.15 + 0.42;
+    const depth = Math.pow(Math.random(), 1.8) * 0.9 + 0.05;
+    return {
+      x: Math.random(), y: Math.random() * 0.82,
+      r,
+      a: Math.random() * 0.5 + 0.3,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.35 + Math.random() * 0.7,
+      depth
+    };
+  });
 
   const CONSTELLATIONS = [
     {
