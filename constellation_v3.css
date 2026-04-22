@@ -79,9 +79,11 @@ html, body {
   margin-top: 22px;
   padding-top: 22px;
   border-top: 1px solid rgba(8, 12, 26, 0.08);
-  font-size: 29px;
-  line-height: 1.45;
+  font-size: clamp(17px, 1.5vw, 21px);
+  line-height: 1.6;
   color: rgba(55, 58, 72, 0.82);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 #detailPanel a {
@@ -92,4 +94,64 @@ html, body {
 #detailPanel a:hover {
   color: rgba(55, 58, 72, 0.98);
   text-decoration-color: rgba(55, 58, 72, 0.65);
+}
+
+#detailPanel.who-am-i-mode {
+  overflow: hidden;
+}
+
+#detailPanel.who-am-i-mode .desc {
+  margin-top: 16px;
+  padding-top: 16px;
+}
+
+.who-am-i-layout {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  width: 100%;
+}
+
+.who-am-i-layout .headshot-side {
+  flex: 0 0 50%;
+  overflow: hidden;
+}
+
+.who-am-i-layout .headshot-side img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.who-am-i-layout .bio-side {
+  flex: 0 0 50%;
+  box-sizing: border-box;
+  padding: 0 32px;
+  align-self: flex-start;
+  font-size: clamp(17px, 1.5vw, 21px);
+  line-height: 1.65;
+  color: rgba(55, 58, 72, 0.82);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+#detailPanel .heart-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#detailPanel .heart-list li {
+  position: relative;
+  padding-left: 1.4em;
+  margin-bottom: 6px;
+}
+
+#detailPanel .heart-list li::before {
+  content: '♡';
+  position: absolute;
+  left: 0;
+  color: rgba(72, 82, 118, 0.75);
 }

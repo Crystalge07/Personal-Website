@@ -16,8 +16,8 @@ window.createSceneData = function createSceneData() {
       ],
       edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0], [4, 5], [5, 0]],
       items: [
-        { star: 0, label: 'Who Am I', title: 'Who Am I', dates: 'About Me', desc: 'I turn ideas into polished interactive products with a strong visual voice.' },
-        { star: 2, label: 'My Interests', title: 'My Interests', dates: 'About Me', desc: 'I blend front-end craft and engineering to build experiences that feel cinematic and precise.' },
+        { star: 0, label: 'Who Am I', title: 'Who Am I', dates: 'About Me', desc: '<div class="who-am-i-layout"><div class="headshot-side"><img src="./Headshot.png" alt="Crystal Ge"></div><div class="bio-side">I\'m a Computer Science and Business student @ Western University. I\'m passionate about the intersection of technology and human experience, specifically how to use software to make the products people use feel more intuitive, personal, and meaningful - and ultimately how businesses can grow through that. I\'ve explored this through roles spanning data, software engineering, and private equity and I\'m now seeking SWE and PM opportunities where I can keep building at that intersection.</div></div>' },
+        { star: 2, label: 'My Interests', title: 'My Interests', dates: 'About Me', desc: '<ul class="heart-list"><li>Playing volleyball (playing and coaching for over 8 years)</li><li>F1 fan (Oscar Piastri fan!!)</li><li>Drawing</li><li>Handmaking pickles</li><li>Mid century modern architecture, furniture, and antiques</li><li>Coin collecting</li><li>Travelling</li><li>Hayday, Clash Royale, Brawl Stars, and Clash of Clans (anything Supercell!!) </li></ul>' },
         { star: 3, label: 'Connect with Me', title: 'Connect with Me', dates: 'About Me', desc: 'LinkedIn: <a href="https://www.linkedin.com/in/crystal-ge-796334269/" target="_blank" rel="noopener noreferrer">Crystal Ge</a><br>GitHub: <a href="https://github.com/Crystalge07" target="_blank" rel="noopener noreferrer">Crystalge07</a><br>Email: <a href="mailto:cge49@uwo.ca">cge49@uwo.ca</a>' },
         { star: 5, label: 'My Resume', title: 'My Resume', dates: 'About Me', desc: 'Explore my background, experiences, and projects in one place.' }
       ]
@@ -30,11 +30,11 @@ window.createSceneData = function createSceneData() {
       ],
       edges: [[0, 5], [5, 1], [1, 2], [2, 3], [3, 4], [4, 5], [1, 4]],
       items: [
-        { star: 0, label: 'Private Equity Analyst', title: 'Private Equity Analyst @ Solen Software Group', dates: 'May 2026 - August 2026', desc: 'Built performant interfaces and component systems for consumer-facing web products.' },
+        { star: 0, label: 'Private Equity Analyst', title: 'Private Equity Analyst @ Solen Software Group', dates: 'May 2026 - August 2026', desc: 'Incoming in-person 16-week private equity internship focused on deal sourcing, portfolio management, and financial analysis' },
         { star: 2, label: 'Director of Finance', title: 'Director of Finance @ Western Entrepreneurship Association', dates: 'September 2025 - April 2026', desc: 'Developed motion-heavy narrative experiences that united visual direction with web tech.' },
         { star: 1, label: 'Data Analyst', title: 'Data Analyst @ Autumn', dates: 'January 2026 - August 2024', desc: 'Led interaction design and prototyping for multi-step user journeys and growth surfaces.' },
         { star: 3, label: 'Finance Executive', title: 'Finance Executive @ Taiwanese Association at Western', dates: '', desc: 'Directed budgeting, reimbursements, and financial reporting to sustain a vibrant cultural student community.' },
-        { star: 4, label: 'Founder and President', title: 'Founder and President @ King FBLC', dates: '', desc: 'Founded and led a competitive business club from the ground up, driving member growth and regional competition results.' },
+        { star: 4, label: 'Founder and President', title: 'Founder and President @ King FBLC', dates: '', desc: 'I founded this chapter from the ground up and scaled it to 100+ members across schools in the GTA, recruiting and leading a team of 20+ executives to build and deliver a comprehensive business education curriculum. Under my leadership the chapter earned 3 national-level chapter awards and 18 national-level event wins!' },
         { star: 5, label: 'Director of Projects', title: 'Director of Projects @ Western Founder\'s Network', dates: 'September 2025 - April 2026', desc: 'Partnered with teams on rapid concept-to-launch builds across branding and digital products.' },
       ]
     },
