@@ -90,13 +90,10 @@ function drawBg(t) {
   ctx.fillStyle = sb;
   ctx.fillRect(0, 0, W, H);
 
-  const MAX_PARALLAX = 40;
   bgStars.forEach((s) => {
     const pulse = 0.76 + 0.24 * Math.sin(t * s.speed + s.phase);
-    const px = parallax.x * s.depth * MAX_PARALLAX;
-    const py = parallax.y * s.depth * MAX_PARALLAX;
     ctx.beginPath();
-    ctx.arc(s.x * W + px, s.y * H + py, s.r * pulse, 0, Math.PI * 2);
+    ctx.arc(s.x * W, s.y * H, s.r * pulse, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(255,255,255,${s.a * (0.9 + (pulse - 0.76) * 1.35)})`;
     ctx.fill();
   });
@@ -165,8 +162,6 @@ let zoomProgress = 0;
 let selectedItem = null;
 let mouse = { x: 0, y: 0 };
 let cam = { scale: 1, tx: 0, ty: 0 };
-let parallax = { x: 0, y: 0 };
-let parallaxTarget = { x: 0, y: 0 };
 const cursorRibbon = [];
 const MAX_RIBBON_POINTS = 44;
 const MAX_RIBBON_LENGTH = 195;
@@ -260,8 +255,6 @@ c.addEventListener('mousemove', (e) => {
   mouse.y = (e.clientY - r.top) * (H / r.height);
   ribbonTarget.x = mouse.x;
   ribbonTarget.y = mouse.y;
-  parallaxTarget.x = mouse.x / W - 0.5;
-  parallaxTarget.y = mouse.y / H - 0.5;
   if (activeConstellation === -1) {
     hoveredConstellation = -1;
     for (let i = 0; i < CONSTELLATIONS.length; i++) {
@@ -365,8 +358,6 @@ function loop(ts) {
     const tail = cursorRibbon[cursorRibbon.length - 1];
     cursorRibbon.push({ x: tail.x, y: tail.y });
   }
-  parallax.x += (parallaxTarget.x - parallax.x) * 0.04;
-  parallax.y += (parallaxTarget.y - parallax.y) * 0.04;
   zoomProgress = lerp(zoomProgress, targetZoom, 0.055);
   if (targetZoom === 0 && zoomProgress < 0.02) {
     zoomProgress = 0;
@@ -408,7 +399,9 @@ function loop(ts) {
   CONSTELLATIONS.forEach((con, ci) => {
     const conScreen = getScreenXY(con.cx, con.cy);
     const proximity = Math.max(0, 1 - (Math.hypot(mouse.x - conScreen.x, mouse.y - conScreen.y) / 240));
-    const hoverBoost = 1 + proximity * 0.18;
+    const isSkyHoverThis = activeConstellation === -1 && hoveredConstellation === ci;
+    const hoverBoostStars = 1 + proximity * 0.18;
+    const hoverBoostLines = isSkyHoverThis ? 1 + proximity * 0.52 : hoverBoostStars;
 
     con.edges.forEach(([a, b], ei) => {
       const sa = con.stars[a], sb = con.stars[b];
@@ -422,25 +415,26 @@ function loop(ts) {
       } else if (activeConstellation === -1 && hoveredConstellation !== -1 && hoveredConstellation !== ci) {
         lineAlpha *= 0.35;
       } else if (hoveredConstellation === ci && activeConstellation === -1) {
-        lineAlpha *= 1.35;
+        lineAlpha *= 2.18;
       }
-      lineAlpha *= hoverBoost;
+      lineAlpha *= hoverBoostLines;
 
       const lg = ctx.createLinearGradient(sa.x, sa.y, sb.x, sb.y);
+      const coreBoost = isSkyHoverThis ? 0.24 : 0;
       lg.addColorStop(0, `rgba(188,194,214,${lineAlpha})`);
       lg.addColorStop(left, `rgba(188,194,214,${lineAlpha * 0.9})`);
-      lg.addColorStop(flowCenter, `rgba(230,232,242,${lineAlpha + meta.glow})`);
+      lg.addColorStop(flowCenter, `rgba(246,248,255,${lineAlpha + meta.glow + coreBoost})`);
       lg.addColorStop(right, `rgba(188,194,214,${lineAlpha * 0.9})`);
       lg.addColorStop(1, `rgba(188,194,214,${lineAlpha})`);
       ctx.strokeStyle = lg;
-      ctx.lineWidth = activeConstellation === ci ? 1.35 : 1.2;
+      ctx.lineWidth = activeConstellation === ci ? 1.35 : (isSkyHoverThis ? 1.55 : 1.2);
       const midX = (sa.x + sb.x) * 0.5;
       const midY = (sa.y + sb.y) * 0.5;
-      const dx = sb.x - sa.x;
-      const dy = sb.y - sa.y;
-      const len = Math.hypot(dx, dy) || 1;
-      const nx = -dy / len;
-      const ny = dx / len;
+      const edx = sb.x - sa.x;
+      const edy = sb.y - sa.y;
+      const elen = Math.hypot(edx, edy) || 1;
+      const nx = -edy / elen;
+      const ny = edx / elen;
       const wobble = Math.sin(t * meta.wobbleSpeed + meta.wobblePhase) * meta.wobbleAmp;
       const cpX = midX + nx * wobble;
       const cpY = midY + ny * wobble;
@@ -459,7 +453,7 @@ function loop(ts) {
       } else if (hoveredConstellation === ci && activeConstellation === -1) {
         alpha = 1.3;
       }
-      alpha *= hoverBoost;
+      alpha *= hoverBoostStars;
       const isLabeledStar = con.labeledStars.includes(si);
       const isZoomedStar = activeConstellation === ci && zoomProgress > 0.65 && con.items.some((item) => item.star === si);
       const twinkle = isLabeledStar ? (0.9 + 0.1 * Math.sin(t * 2.2 + si * 1.7 + ci * 0.9)) : 1;
@@ -487,7 +481,8 @@ function loop(ts) {
     const maxY = Math.max(...con.stars.map((p) => p.y));
     const nameAlpha = (activeConstellation !== -1 && ci !== activeConstellation) ? (1 - zoomProgress) : 1;
     ctx.font = '500 18px "Cormorant Garamond", serif';
-    ctx.fillStyle = `rgba(255,255,255,${0.74 * nameAlpha})`;
+    const nameWhite = isSkyHoverThis ? 0.96 : 0.74;
+    ctx.fillStyle = `rgba(255,255,255,${nameWhite * nameAlpha})`;
     ctx.textAlign = 'center';
     if (activeConstellation === ci && zoomProgress > 0) {
       const focus = con;
